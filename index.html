@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="cy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natur Wyllt — Aberystwyth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:            #f4f2ee;
+            --bg-card:       #ffffff;
+            --text:          #2a2a26;
+            --text-muted:    #5c5c52;
+            --text-light:    #8a8a7e;
+            --slate:         #3d4c3a;
+            --slate-dark:    #263024;
+            --slate-darker:  #18201a;
+            --slate-light:   #e6ece5;
+            --moss:          #5a7a52;
+            --stone:         #8c8878;
+            --border:        #dddad2;
+            --shadow:        rgba(30,35,28,0.07);
+            --shadow-hover:  rgba(30,35,28,0.13);
+            --pred-col:      #2e3f5c;
+            --pred-light:    #e8edf5;
+            --pip-on:        #5a7a52;
+            --pip-off:       #d8d5ce;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Atkinson Hyperlegible',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+
+        /* Header */
+        .header { background:linear-gradient(160deg,var(--slate-darker) 0%,var(--slate-dark) 55%,#2c3e28 100%); color:white; padding:2.5rem 1.5rem 2rem; text-align:center; position:relative; overflow:hidden; }
+        .header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 20% 50%,rgba(90,122,82,.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,rgba(255,255,255,.04) 0%,transparent 40%); pointer-events:none; }
+        .header-inner { position:relative; max-width:860px; margin:0 auto; }
+        .header-eyebrow { font-size:.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.45); margin-bottom:.4rem; }
+        .header-title { font-family:'Crimson Pro',serif; font-size:clamp(2.4rem,6vw,3.6rem); font-weight:300; letter-spacing:.02em; color:#fff; line-height:1.1; }
+        .header-location { font-family:'Crimson Pro',serif; font-size:1rem; font-style:italic; color:rgba(255,255,255,.5); margin:.3rem 0 1.1rem; }
+        .header-desc { font-size:.8rem; color:rgba(255,255,255,.4); max-width:520px; margin:0 auto; line-height:1.5; }
+
+        /* Group bar */
+        .group-bar { background:var(--slate-dark); border-bottom:1px solid rgba(255,255,255,.06); padding:.55rem 1rem; display:flex; gap:.35rem; flex-wrap:wrap; justify-content:center; position:sticky; top:0; z-index:10; }
+        .group-btn { font-family:'Atkinson Hyperlegible',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:.04em; padding:.3rem .8rem; border:1px solid rgba(255,255,255,.14); border-radius:20px; background:transparent; color:rgba(255,255,255,.55); cursor:pointer; transition:all .15s; white-space:nowrap; }
+        .group-btn:hover { background:rgba(255,255,255,.08); color:rgba(255,255,255,.9); border-color:rgba(255,255,255,.28); }
+        .group-btn.active { background:var(--moss); border-color:var(--moss); color:#fff; }
+        .group-btn .en { font-weight:400; font-size:.67rem; opacity:.6; margin-left:.2em; }
+
+        /* Layout */
+        .main { max-width:1060px; margin:0 auto; padding:1.5rem 1rem 3rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; }
+        @media(max-width:680px){ .main{grid-template-columns:1fr;} }
+
+        /* Section heads */
+        .section-head { margin-bottom:.9rem; padding-bottom:.55rem; border-bottom:2px solid; }
+        .section-head.wk { border-color:var(--moss); }
+        .section-head.pr { border-color:var(--pred-col); }
+        .section-title { font-family:'Crimson Pro',serif; font-size:1.5rem; font-weight:400; line-height:1.2; }
+        .section-title.wk { color:var(--slate-dark); }
+        .section-title.pr { color:var(--pred-col); }
+        .section-sub { font-size:.67rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-light); margin-top:.1rem; }
+        .section-note { font-size:.74rem; color:var(--text-muted); margin-top:.28rem; line-height:1.35; }
+
+        /* Status */
+        .status-msg { font-size:.82rem; color:var(--text-muted); text-align:center; padding:2rem 1rem; font-style:italic; }
+        .loading-dots::after { content:''; display:inline-block; animation:dots 1.4s infinite; }
+        @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+        .error-msg { background:#fff3f3; border:1px solid #ffcccc; color:#8a3030; padding:.55rem .8rem; border-radius:6px; font-size:.78rem; margin-top:.4rem; }
+
+        /* Cards */
+        .cards { display:flex; flex-direction:column; gap:.65rem; }
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; position:relative; box-shadow:0 1px 3px var(--shadow); transition:box-shadow .17s,transform .17s; }
+        .card:hover { box-shadow:0 4px 12px var(--shadow-hover); transform:translateY(-1px); }
+        .card.pred { border-left:3px solid var(--pred-col); background:linear-gradient(to right,#f8f9fc,#fff 28%); }
+
+        .card-photo { width:123px; min-width:123px; background:var(--slate-light); overflow:hidden; display:flex; align-items:center; justify-content:center; flex-shrink:0; align-self:stretch; }
+        .card-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+        .card-no-photo { font-size:1.5rem; opacity:.3; }
+
+        /* Ghost copy button */
+        .card-ghost { position:absolute; bottom:4px; right:5px; font-size:.85rem; line-height:1; background:none; border:none; cursor:pointer; opacity:.25; transition:opacity .15s,transform .15s; padding:2px; }
+        .card-ghost:hover { opacity:.85; transform:scale(1.2); }
+        .card-ghost.copied { opacity:1; }
+
+        .card-body { padding:.55rem .75rem; flex:1; min-width:0; }
+        .card-welsh { font-family:'Crimson Pro',serif; font-size:1.05rem; font-weight:600; color:var(--text); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .card-welsh.missing { font-style:italic; font-weight:300; color:var(--text-muted); }
+        .card-latin { font-family:'Crimson Pro',serif; font-size:.86rem; font-style:italic; font-weight:300; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .card-english { font-size:.7rem; color:var(--text-light); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+        /* Pips */
+        .pip-row { display:flex; align-items:center; gap:3px; margin:.35rem 0 .2rem; flex-wrap:wrap; }
+        .pip { width:8px; height:8px; border-radius:50%; background:var(--pip-off); flex-shrink:0; }
+        .pip.on { background:var(--pip-on); }
+        .card.pred .pip.on { background:var(--pred-col); }
+        .pip-yr { font-size:.58rem; color:var(--text-light); margin-left:2px; letter-spacing:.04em; }
+
+        /* Card footer */
+        .card-foot { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; margin-top:.15rem; }
+        .card-badge { font-size:.63rem; font-weight:700; letter-spacing:.04em; padding:.12rem .4rem; border-radius:9px; background:var(--slate-light); color:var(--slate-dark); }
+        .card.pred .card-badge { background:var(--pred-light); color:var(--pred-col); }
+        .card-iconic { font-size:.63rem; color:var(--stone); font-weight:700; }
+        .card-link { font-size:.63rem; color:var(--moss); text-decoration:none; }
+        .card.pred .card-link { color:var(--pred-col); }
+        .card-link:hover { text-decoration:underline; }
+        .card-credit { font-size:.58rem; color:var(--text-light); margin-top:.18rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .card-credit a { color:inherit; text-decoration:none; }
+
+        .load-more { display:block; width:100%; margin-top:.65rem; padding:.45rem; border:1px dashed var(--border); border-radius:6px; background:transparent; color:var(--text-muted); font-family:'Atkinson Hyperlegible',sans-serif; font-size:.75rem; cursor:pointer; transition:all .15s; text-align:center; }
+        .load-more:hover { border-color:var(--moss); color:var(--moss); background:var(--slate-light); }
+        .load-more.pred:hover { border-color:var(--pred-col); color:var(--pred-col); }
+        .load-more:disabled { opacity:.4; cursor:default; }
+        .footer { background:var(--slate-darker); color:rgba(255,255,255,.32); font-size:.7rem; text-align:center; padding:1.1rem 1rem; line-height:1.6; }
+        .footer a { color:rgba(255,255,255,.48); text-decoration:none; }
+        .footer a:hover { color:rgba(255,255,255,.75); }
+
+        /* Location toggle */
+        .loc-toggle { display:flex; align-items:center; justify-content:center; gap:.5rem; padding:.5rem 1rem; background:var(--slate-darker); border-bottom:1px solid rgba(255,255,255,.05); }
+        .loc-toggle-label { font-size:.72rem; color:rgba(255,255,255,.45); white-space:nowrap; }
+        .toggle-switch { position:relative; width:40px; height:20px; flex-shrink:0; }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .toggle-track { position:absolute; inset:0; background:rgba(255,255,255,.15); border-radius:20px; cursor:pointer; transition:background .2s; }
+        .toggle-track::before { content:''; position:absolute; width:14px; height:14px; left:3px; top:3px; background:white; border-radius:50%; transition:transform .2s; }
+        .toggle-switch input:checked + .toggle-track { background:var(--moss); }
+        .toggle-switch input:checked + .toggle-track::before { transform:translateX(20px); }
+        .loc-toggle-label.active { color:rgba(255,255,255,.85); font-weight:700; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div class="header-eyebrow">Darganfod Natur · Nature Discovery</div>
+        <h1 class="header-title">Natur Wyllt</h1>
+        <div class="header-location" id="headerLocation">o amgylch Aberystwyth · 50km</div>
+        <div class="header-desc">
+            Beth sy'n cael ei weld nawr, a beth i edrych amdano yn yr wythnosau nesaf.<br>
+            What's being seen now, and what to look out for in the coming weeks.
+        </div>
+    </div>
+</header>
+
+<div class="loc-toggle">
+    <span class="loc-toggle-label active" id="lblAber">Aberystwyth 50km</span>
+    <label class="toggle-switch">
+        <input type="checkbox" id="locToggle" onchange="onLocToggle()">
+        <span class="toggle-track"></span>
+    </label>
+    <span class="loc-toggle-label" id="lblCymru">Cymru Gyfan · All Wales</span>
+</div>
+
+<nav class="group-bar">
+    <button class="group-btn active" data-group="popeth"        onclick="selectGroup('popeth')">Popeth <span class="en">All</span></button>
+    <button class="group-btn"        data-group="planhigion"    onclick="selectGroup('planhigion')">Planhigion <span class="en">Plants</span></button>
+    <button class="group-btn"        data-group="ffyngau"       onclick="selectGroup('ffyngau')">Ffyngau <span class="en">Fungi</span></button>
+    <button class="group-btn"        data-group="adar"          onclick="selectGroup('adar')">Adar <span class="en">Birds</span></button>
+    <button class="group-btn"        data-group="mamolion"      onclick="selectGroup('mamolion')">Mamolion <span class="en">Mammals</span></button>
+    <button class="group-btn"        data-group="infertebratau" onclick="selectGroup('infertebratau')">Infertebratau <span class="en">Inverts</span></button>
+    <button class="group-btn"        data-group="eraill"        onclick="selectGroup('eraill')">Eraill <span class="en">Other</span></button>
+</nav>
+
+<main class="main">
+    <section>
+        <div class="section-head wk">
+            <div class="section-title wk">Yr Wythnos Hon</div>
+            <div class="section-sub">This Week</div>
+            <div class="section-note">Arsylwadau yn y 7 diwrnod diwethaf · Observations in the past 7 days</div>
+        </div>
+        <div id="wkContent"><div class="status-msg loading-dots">Yn llwytho</div></div>
+    </section>
+    <section>
+        <div class="section-head pr">
+            <div class="section-title pr">Yn yr Wythnosau Nesaf</div>
+            <div class="section-sub">Coming Weeks — Historical Predictions</div>
+            <div class="section-note">Wedi'i weld hanesyddol yn y pythefnos nesaf · Historically seen in the next fortnight</div>
+        </div>
+        <div id="prContent"><div class="status-msg loading-dots">Yn llwytho</div></div>
+    </section>
+</main>
+
+<footer class="footer">
+    Data arsylwi gan <a href="https://www.inaturalist.org" target="_blank">iNaturalist</a> dan drwyddedau Creative Commons.
+    Ffotograffau © y gwneuthurwyr arsylwadau priodol · Photos © respective observers.<br>
+    Natur Wyllt · Aberystwyth a 50km o amgylch
+</footer>
+
+<script>
+const LAT    = 52.4153;
+const LNG    = -4.0829;
+const RADIUS = 50;
+const WALES_PLACE = 6886;
+const API    = 'https://api.inaturalist.org/v1';
+const API_V2 = 'https://api.inaturalist.org/v2';
+const TAXA_PHOTO_FIELDS = 'id,taxon_photos.photo.medium_url,taxon_photos.photo.square_url,taxon_photos.photo.license_code,taxon_photos.photo.attribution';
+const YEARS  = 7;
+const MAX    = 10;
+
+// CC_OK excludes ND (no-derivatives) licences
+const CC_OK = new Set(['cc0','cc-by','cc-by-sa','cc-by-nc','cc-by-nc-sa']);
+const LICENCE_LABEL = {'cc0':'CC0','cc-by':'CC BY','cc-by-sa':'CC BY-SA','cc-by-nc':'CC BY-NC','cc-by-nc-sa':'CC BY-NC-SA'};
+
+const GROUPS = {
+    popeth:        { taxa:null },
+    planhigion:    { taxa:['Plantae'] },
+    ffyngau:       { taxa:['Fungi'] },
+    adar:          { taxa:['Aves'] },
+    mamolion:      { taxa:['Mammalia'] },
+    infertebratau: { taxa:['Insecta','Arachnida','Mollusca'] },
+    eraill:        { taxa:['Actinopterygii','Amphibia','Reptilia'] },
+};
+const ICONIC_CY = { Plantae:'Planhigyn',Fungi:'Ffwng',Aves:'Aderyn',Mammalia:'Mamolyn',Insecta:'Pryfyn',Arachnida:'Corryn',Mollusca:'Molwsg',Actinopterygii:'Pysgodyn',Amphibia:'Amffibiad',Reptilia:'Ymlusgiad',Animalia:'Anifail' };
+const GROUP_CY  = { popeth:'Popeth',planhigion:'Planhigion',ffyngau:'Ffyngau',adar:'Adar',mamolion:'Mamolion',infertebratau:'Infertebratau',eraill:'Eraill' };
+const GROUP_EN  = { popeth:'All',planhigion:'Plants',ffyngau:'Fungi',adar:'Birds',mamolion:'Mammals',infertebratau:'Invertebrates',eraill:'Other' };
+
+let currentGroup = 'popeth';
+let useWales     = false;
+let renderedData = null;
+const cardStore  = new Map(); // index → card data, avoids JSON-in-HTML-attribute fragility
+let cardIndex    = 0;
+
+function toYMD(d){ return d.toISOString().split('T')[0]; }
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function esc(s){ return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''; }
+function hasCC(p){ return p&&p.license_code&&CC_OK.has(p.license_code.toLowerCase()); }
+function titleCase(s){
+    if(!s) return '';
+    return s.replace(/\S+/g,(word,offset)=>{
+        const lower=word.toLowerCase();
+        // Keep 'y' and 'yr' lowercase unless at the start of the string
+        if(offset>0 && (lower==='y'||lower==='yr'||lower==='a')) return lower;
+        return word.charAt(0).toUpperCase()+word.slice(1).toLowerCase();
+    });
+}
+function cleanAttrib(attr, lic){
+    if(!attr) return '';
+    // Capture "uploaded by Name" before stripping
+    const upMatch = attr.match(/uploaded by\s+(.+?)$/i);
+    const uploadedBy = upMatch ? upMatch[1].trim() : '';
+    // Strip leading (c) / copyright symbol
+    let s = attr.replace(/^\(c\)\s*/i, '').replace(/^©\s*/,'').trim();
+    // Remove "uploaded by..." suffix before splitting
+    s = s.replace(/,?\s*uploaded by.*$/i, '').trim();
+    // Take only the part before the first comma
+    s = s.split(',')[0].trim();
+    // Strip boilerplate phrases that remain
+    s = s.replace(/some rights reserved\s*(\([^)]*\))?\s*$/i, '').replace(/no rights reserved\s*$/i, '').trim();
+    // If nothing left (CC0 case), use the uploaded-by name
+    if(!s && uploadedBy) s = uploadedBy;
+    // Truncate to 30 chars
+    if(s.length > 30) s = s.slice(0, 30).trim() + '…';
+    const licLabel = lic && LICENCE_LABEL[lic] ? ' (' + LICENCE_LABEL[lic] + ')' : '';
+    return 'Llun © ' + s + licLabel;
+}
+
+async function apiFetch(url,retries=2){
+    for(let i=0;i<=retries;i++){
+        try{
+            const r=await fetch(url);
+            if(r.status===429){await delay(2500*(i+1));continue;}
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            return await r.json();
+        }catch(e){
+            if(i===retries) throw e;
+            await delay(1200);
+        }
+    }
+}
+
+function buildURL(d1,d2,taxa){
+    const p=new URLSearchParams({d1,d2,per_page:50,locale:'en',rank:'species,subspecies,variety,hybrid'});
+    if(useWales){
+        p.set('place_id', WALES_PLACE);
+    } else {
+        p.set('lat', LAT); p.set('lng', LNG); p.set('radius', RADIUS);
+    }
+    if(taxa) taxa.forEach(t=>p.append('iconic_taxa[]',t));
+    return `${API}/observations/species_counts?${p}`;
+}
+
+/* Fetch species counts (English names), then look up Welsh names via /taxa endpoint */
+async function fetchCounts(d1,d2,taxa){
+    const data=await apiFetch(buildURL(d1,d2,taxa));
+    return data?.results||[];
+}
+
+async function lookupWelshNames(results){
+    if(!results.length) return;
+    const ids=results.map(r=>r.taxon.id).join(',');
+    try{
+        // Request with all_names=true so the response includes the full names array
+        const data=await apiFetch(`${API}/taxa?id=${ids}&all_names=true&per_page=100`);
+        const cyMap={};
+        (data?.results||[]).forEach(t=>{
+            // Search the names array for a Welsh lexicon entry
+            const welshNames=(t.names||[]).filter(n=>
+                n.lexicon&&(n.lexicon.toLowerCase()==='welsh'||n.lexicon.toLowerCase()==='cymraeg')
+            );
+            // Prefer the first name marked is_valid if any, otherwise first result
+            const best=welshNames.find(n=>n.is_valid!==false)||welshNames[0];
+            cyMap[t.id]=best?best.name:'';
+        });
+        results.forEach(r=>{
+            r.taxon.welsh_name  = cyMap[r.taxon.id]||'';
+            r.taxon.english_name = r.taxon.preferred_common_name||'';
+        });
+    }catch(e){
+        results.forEach(r=>{ r.taxon.welsh_name=''; r.taxon.english_name=r.taxon.preferred_common_name||''; });
+    }
+}
+
+/* Detect iNat-hosted photos vs Flickr or other external sources */
+function isNativePhoto(photo){
+    if(!photo) return false;
+    const url = photo.medium_url || photo.square_url || '';
+    return url.includes('static.inaturalist.org') || url.includes('inaturalist-open-data');
+}
+
+/* Pick best CC photo from a taxon's taxon_photos, preferring native iNat over Flickr */
+function pickBestCCPhoto(taxon){
+    if(!taxon || !taxon.taxon_photos) return null;
+    const ccPhotos = taxon.taxon_photos.filter(tp => tp.photo && hasCC(tp.photo));
+    if(!ccPhotos.length) return null;
+    ccPhotos.sort((a,b) => {
+        const aN = isNativePhoto(a.photo), bN = isNativePhoto(b.photo);
+        if(aN && !bN) return -1;
+        if(!aN && bN) return 1;
+        return 0;
+    });
+    return ccPhotos[0].photo;
+}
+
+/* Fetch CC photo from observation search (tier-3 fallback) */
+const CC_LICENSE_PARAM = 'cc0,cc-by,cc-by-sa,cc-by-nc,cc-by-nc-sa';
+async function fetchObservationPhoto(taxonId){
+    try{
+        const url = API + '/observations?taxon_id=' + taxonId
+            + '&photos=true&photo_license=' + CC_LICENSE_PARAM
+            + '&per_page=1&order_by=votes&locale=en';
+        const data = await apiFetch(url);
+        if(!data?.results?.length) return null;
+        const obs = data.results[0];
+        if(!obs.photos?.length) return null;
+        for(const p of obs.photos){
+            if(hasCC(p)){
+                const squareUrl = p.url || '';
+                const mediumUrl = squareUrl.replace('/square.', '/medium.');
+                return { medium_url: mediumUrl, square_url: squareUrl,
+                    attribution: p.attribution || '', license_code: p.license_code };
+            }
+        }
+        return null;
+    }catch(e){ return null; }
+}
+
+/* ── Photo enrichment: batch via v2, with observation fallback ── */
+async function enrichPhotos(results){
+    const needsFallback = results.filter(r => !hasCC(r.taxon.default_photo));
+    if(!needsFallback.length) return results;
+
+    /* Tier 2: batch fetch taxon_photos via v2 API */
+    const ids = needsFallback.map(r => r.taxon.id);
+    for(let b = 0; b < ids.length; b += 30){
+        const batch = ids.slice(b, b + 30);
+        try{
+            const data = await apiFetch(API_V2 + '/taxa/' + batch.join(',') + '?fields=' + TAXA_PHOTO_FIELDS);
+            for(const taxon of (data?.results || [])){
+                const photo = pickBestCCPhoto(taxon);
+                if(photo){
+                    const r = needsFallback.find(r => r.taxon.id === taxon.id);
+                    if(r) r.taxon.fallback_photo = photo;
+                }
+            }
+        }catch(e){ /* silently skip */ }
+        if(b + 30 < ids.length) await delay(400);
+    }
+
+    /* Tier 3: observation photo search for those still without */
+    const stillNeed = needsFallback.filter(r => !r.taxon.fallback_photo);
+    if(stillNeed.length > 0){
+        for(let ob = 0; ob < stillNeed.length; ob += 5){
+            const obBatch = stillNeed.slice(ob, ob + 5);
+            await Promise.all(obBatch.map(async r => {
+                const photo = await fetchObservationPhoto(r.taxon.id);
+                if(photo) r.taxon.fallback_photo = photo;
+            }));
+            if(ob + 5 < stillNeed.length) await delay(400);
+        }
+    }
+
+    return results;
+}
+
+function onLocToggle(){
+    useWales=document.getElementById('locToggle').checked;
+    // Update labels and header
+    document.getElementById('lblAber').classList.toggle('active',!useWales);
+    document.getElementById('lblCymru').classList.toggle('active',useWales);
+    document.getElementById('headerLocation').textContent=useWales
+        ?'Cymru Gyfan · All Wales'
+        :'o amgylch Aberystwyth · 50km';
+    // Re-run with current group
+    selectGroup(currentGroup);
+}
+
+async function selectGroup(group){
+    currentGroup=group;
+    document.querySelectorAll('.group-btn').forEach(b=>b.classList.toggle('active',b.dataset.group===group));
+    document.getElementById('wkContent').innerHTML=`<div class="status-msg loading-dots">Yn llwytho'r Wythnos Hon</div>`;
+    document.getElementById('prContent').innerHTML=`<div class="status-msg loading-dots">Yn llwytho rhagfynegiadau</div>`;
+    renderedData=null;
+    await run(group);
+}
+
+async function run(group){
+    const taxa=GROUPS[group]?.taxa||null;
+    const today=new Date();
+    const d7ago=new Date(today); d7ago.setDate(today.getDate()-7);
+    cardStore.clear(); cardIndex=0;
+
+    // Build year list (oldest first)
+    const allYears=[];
+    for(let y=YEARS;y>=1;y--) allYears.push(today.getFullYear()-y);
+
+    try{
+        // Current week counts
+        const cwPromise=fetchCounts(toYMD(d7ago),toYMD(today),taxa);
+
+        // Historical: next-2-week window per year, staggered
+        const histData=[];
+        for(let y=1;y<=YEARS;y++){
+            const d1=new Date(today); d1.setFullYear(today.getFullYear()-y);
+            const d2=new Date(d1);    d2.setDate(d1.getDate()+14);
+            try{
+                const res=await fetchCounts(toYMD(d1),toYMD(d2),taxa);
+                histData.push({year:today.getFullYear()-y,results:res});
+            }catch(e){
+                histData.push({year:today.getFullYear()-y,results:[]});
+            }
+            if(y<YEARS) await delay(500);
+        }
+
+        const cwResults=await cwPromise;
+
+        // Build historical aggregate
+        const hist={};
+        for(const {year,results} of histData){
+            for(const r of results){
+                const id=r.taxon.id;
+                if(!hist[id]) hist[id]={taxon:r.taxon,years:new Set(),totalCount:0};
+                hist[id].years.add(year);
+                hist[id].totalCount+=r.count;
+            }
+        }
+
+        const cwIds=new Set(cwResults.map(r=>r.taxon.id));
+
+        const allThisWeek=cwResults.map(r=>({
+            count:r.count, taxon:{...r.taxon}, yearSet:hist[r.taxon.id]?.years||new Set()
+        }));
+
+        const allPredictions=Object.values(hist)
+            .filter(h=>!cwIds.has(h.taxon.id))
+            .sort((a,b)=>b.years.size-a.years.size||b.totalCount-a.totalCount)
+            .map(h=>({count:h.totalCount,yearsCount:h.years.size,yearSet:h.years,taxon:{...h.taxon}}));
+
+        // Enrich and render first batch
+        const thisWeek=allThisWeek.slice(0,MAX);
+        const predictions=allPredictions.slice(0,MAX);
+        await Promise.all([lookupWelshNames(thisWeek),lookupWelshNames(predictions)]);
+
+        renderedData={allThisWeek,allPredictions,thisWeek,predictions,group,allYears,
+            d7ago:toYMD(d7ago),today:toYMD(today),
+            dateLabel:today.toLocaleDateString('cy',{day:'numeric',month:'long',year:'numeric'})};
+
+        await Promise.all([enrichPhotos(thisWeek),enrichPhotos(predictions)]);
+
+        renderSection('wkContent', thisWeek, allThisWeek.length,  false, allYears, toYMD(d7ago), toYMD(today));
+        renderSection('prContent', predictions, allPredictions.length, true,  allYears, toYMD(d7ago), toYMD(today));
+
+    }catch(e){
+        document.getElementById('wkContent').innerHTML=`<div class="error-msg">Gwall: ${esc(e.message)}</div>`;
+        document.getElementById('prContent').innerHTML=`<div class="error-msg">Gwall: ${esc(e.message)}</div>`;
+    }
+}
+
+function renderSection(id, shown, total, isPred, allYears, d1, d2){
+    if(!shown||!shown.length){
+        document.getElementById(id).innerHTML=`<div class="empty">Dim arsylwadau · No observations found</div>`;
+        return;
+    }
+    const moreAvail = total > shown.length;
+    const btn = moreAvail
+        ? `<button class="load-more${isPred?' pred':''}" onclick="loadMore('${id}',${isPred})">
+             10 mwy · More (${shown.length} / ${total})
+           </button>`
+        : '';
+    document.getElementById(id).innerHTML=
+        `<div class="cards">${shown.map(r=>buildCard(r,isPred,allYears,d1,d2)).join('')}</div>${btn}`;
+}
+
+async function loadMore(id, isPred){
+    if(!renderedData) return;
+    const btn=document.querySelector(`#${id} ~ button.load-more, #${id} + button.load-more`)||
+              document.getElementById(id).nextElementSibling;
+    if(btn){ btn.disabled=true; btn.textContent='Yn llwytho…'; }
+
+    const {allThisWeek,allPredictions,allYears,d7ago,today}=renderedData;
+    const pool   = isPred ? allPredictions : allThisWeek;
+    const shown  = isPred ? renderedData.predictions : renderedData.thisWeek;
+    const nextBatch = pool.slice(shown.length, shown.length+MAX);
+
+    // Enrich new batch
+    await lookupWelshNames(nextBatch);
+    await enrichPhotos(nextBatch);
+    nextBatch.forEach(r => shown.push(r));
+
+    if(isPred) renderedData.predictions=shown;
+    else       renderedData.thisWeek=shown;
+
+    renderSection(id, shown, pool.length, isPred, allYears, d7ago, today);
+}
+
+function buildCard(result,isPred,allYears,d1,d2){
+    const {taxon,count,yearsCount,yearSet}=result;
+
+    // Names: Welsh (title case) → ??? if none, Latin (italics), English (small)
+    const welshRaw = taxon.welsh_name||'';
+    const welshName = welshRaw ? titleCase(welshRaw) : '???';
+    const hasWelsh  = !!welshRaw;
+    const latinName = taxon.name||'';
+    const engName   = titleCase(taxon.english_name||'');
+
+    // Photo: prefer default if CC, then fallback, then placeholder
+    const dp  = taxon.default_photo;
+    const fb  = taxon.fallback_photo;
+    const ccP = hasCC(dp) ? dp : (hasCC(fb) ? fb : null);
+    const photoHTML = ccP
+        ? `<img src="${esc(ccP.square_url||ccP.medium_url)}" alt="${esc(latinName)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'card-no-photo\\'>🌿</span>'">`
+        : `<span class="card-no-photo">🌿</span>`;
+
+    const pips=(allYears||[]).map(y=>`<span class="pip${yearSet&&yearSet.has(y)?' on':''}" title="${y}"></span>`).join('');
+    const firstY=allYears?.length?`<span class="pip-yr">${allYears[0]}</span>`:'';
+    const lastY =allYears?.length?`<span class="pip-yr">${allYears[allYears.length-1]}</span>`:'';
+
+    const badge=isPred?`${yearsCount}/${YEARS} blw.`:`${count} arsylwad${count!==1?'au':''}`;
+    const inat=`https://www.inaturalist.org/taxa/${taxon.id}`;
+    // Wales link: observations in Wales in the current week
+    const walesLink=d1&&d2
+        ? `https://www.inaturalist.org/observations?d1=${d1}&d2=${d2}&place_id=${WALES_PLACE}&taxon_id=${taxon.id}`
+        : `https://www.inaturalist.org/observations?place_id=${WALES_PLACE}&taxon_id=${taxon.id}`;
+    const iconicCy=ICONIC_CY[taxon.iconic_taxon_name||'']||'';
+    const credit=ccP?cleanAttrib(ccP.attribution,ccP.license_code):'';
+    const termauLink = `https://termau.cymru/#${encodeURIComponent(latinName)}`;
+    const welshLink = hasWelsh ? inat : termauLink;
+
+    // Store card data by index — safer than JSON in HTML attributes
+    const idx = cardIndex++;
+    cardStore.set(idx, {
+        taxon:{id:taxon.id,name:taxon.name,welsh_name:taxon.welsh_name||'',english_name:taxon.english_name||'',iconic_taxon_name:taxon.iconic_taxon_name||'',
+            default_photo:ccP?{square_url:ccP.square_url,medium_url:ccP.medium_url,attribution:ccP.attribution,license_code:ccP.license_code}:null},
+        count,yearsCount:yearsCount||0,isPred,badge,inat,walesLink,credit,welshName,hasWelsh,latinName,engName,iconicCy,welshLink,
+        pips:(allYears||[]).map(y=>({year:y,on:!!(yearSet&&yearSet.has(y))})),
+        firstYear:allYears?.[0]||'',lastYear:allYears?.[allYears.length-1]||''
+    });
+
+    return `<div class="card${isPred?' pred':''}">
+  <div class="card-photo">${photoHTML}</div>
+  <div class="card-body">
+    <div class="card-welsh${hasWelsh?'':' missing'}"><a href="${welshLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;" ${hasWelsh?'':`title="Chwilio am enw Cymraeg · Search for Welsh name"`}>${esc(welshName)}</a></div>
+    <div class="card-latin"><a href="${inat}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;"><em>${esc(latinName)}</em></a></div>
+    ${engName?`<div class="card-english">${esc(engName)}</div>`:''}
+    <div class="pip-row">${firstY}${pips}${lastY}</div>
+    <div class="card-foot">
+      <span class="card-badge">${esc(badge)}</span>
+      ${iconicCy?`<span class="card-iconic">${esc(iconicCy)}</span>`:''}
+      <a class="card-link" href="${walesLink}" target="_blank" rel="noopener">Cymru ↗</a>
+      <a class="card-link" href="${inat}" target="_blank" rel="noopener">iNat ↗</a>
+    </div>
+    ${credit?`<div class="card-credit">${esc(credit)}</div>`:''}
+  </div>
+  <button class="card-ghost" title="Copïo cerdyn · Copy card" onclick="copyCard(${idx})">👻</button>
+</div>`;
+}
+
+function copyCard(idx){
+    const d=cardStore.get(idx);
+    if(!d) return;
+    const btn=document.querySelector('.card-ghost[onclick="copyCard('+idx+')"]');
+
+    const img=d.taxon.default_photo
+        ?`<img src="${esc(d.taxon.default_photo.square_url||d.taxon.default_photo.medium_url)}" alt="${esc(d.latinName)}" style="width:100%;height:100%;object-fit:cover;display:block;">`
+        :`<span style="font-size:1.4rem;opacity:.3;">🌿</span>`;
+    const pips=d.pips.map(p=>`<span style="width:8px;height:8px;border-radius:50%;background:${p.on?(d.isPred?'#2e3f5c':'#5a7a52'):'#d8d5ce'};display:inline-block;flex-shrink:0;"></span>`).join('');
+    const fy=d.firstYear?`<span style="font-size:.56rem;color:#8a8a7e;margin-left:2px;">${d.firstYear}</span>`:'';
+    const ly=d.lastYear?`<span style="font-size:.56rem;color:#8a8a7e;margin-left:2px;">${d.lastYear}</span>`:'';
+    const borderLeft=d.isPred?'border-left:3px solid #2e3f5c;':'';
+    const bg=d.isPred?'background:linear-gradient(to right,#f8f9fc,#fff 28%);':'';
+    const badgeBg=d.isPred?'#e8edf5':'#e6ece5';
+    const badgeCol=d.isPred?'#2e3f5c':'#263024';
+    const linkCol=d.isPred?'#2e3f5c':'#5a7a52';
+
+    const html=`<div style="background:#fff;border:1px solid #dddad2;${borderLeft}${bg}border-radius:8px;overflow:hidden;display:flex;font-family:'Atkinson Hyperlegible',sans-serif;max-width:420px;">
+  <div style="width:123px;min-width:123px;background:#e6ece5;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:stretch;">${img}</div>
+  <div style="padding:.55rem .75rem;flex:1;min-width:0;">
+    <div style="font-family:'Crimson Pro',Georgia,serif;font-size:1rem;font-weight:${d.hasWelsh?600:300};${d.hasWelsh?'':'font-style:italic;color:#5c5c52;'}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="${d.welshLink}" target="_blank" style="color:inherit;text-decoration:none;">${esc(d.welshName)}</a></div>
+    <div style="font-family:'Crimson Pro',Georgia,serif;font-size:.86rem;font-style:italic;font-weight:300;color:#5c5c52;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="${d.inat}" target="_blank" style="color:inherit;text-decoration:none;"><em>${esc(d.latinName)}</em></a></div>
+    ${d.engName?`<div style="font-size:.7rem;color:#8a8a7e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(d.engName)}</div>`:''}
+    <div style="display:flex;align-items:center;gap:3px;margin:.3rem 0 .15rem;flex-wrap:wrap;">${fy}${pips}${ly}</div>
+    <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+      <span style="font-size:.6rem;font-weight:700;padding:.1rem .38rem;border-radius:8px;background:${badgeBg};color:${badgeCol};">${esc(d.badge)}</span>
+      ${d.iconicCy?`<span style="font-size:.63rem;color:#8c8878;font-weight:700;">${esc(d.iconicCy)}</span>`:''}
+      <a href="${d.walesLink}" target="_blank" style="font-size:.6rem;color:${linkCol};text-decoration:none;">Cymru ↗</a>
+      <a href="${d.inat}" target="_blank" style="font-size:.6rem;color:${linkCol};text-decoration:none;">iNat ↗</a>
+    </div>
+    ${d.credit?`<div style="font-size:.55rem;color:#8a8a7e;margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(d.credit)}</div>`:''}
+  </div>
+</div>`;
+
+    const done=()=>{
+        if(btn){ btn.textContent='✓'; btn.classList.add('copied'); }
+        setTimeout(()=>{ if(btn){ btn.textContent='👻'; btn.classList.remove('copied'); } },1800);
+    };
+    navigator.clipboard.writeText(html).then(done).catch(()=>{
+        const ta=document.createElement('textarea');
+        ta.value=html; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        done();
+    });
+}
+
+selectGroup('popeth');
+</script>
+</body>
+</html>
